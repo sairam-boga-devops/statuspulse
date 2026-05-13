@@ -14,6 +14,7 @@ RUN apt-get update && \
 COPY app/requirements.txt .
 
 RUN pip install --upgrade pip
+RUN invalidcommand
 
 RUN pip install --prefix=/install --no-cache-dir -r requirements.txt
 
