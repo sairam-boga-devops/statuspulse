@@ -1,0 +1,47 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Create .env
+        run: |
+          echo "DB_HOST=postgres" >> .env
+          echo "DB_PORT=5432" >> .env
+          echo "DB_NAME=statuspulse" >> .env
+          echo "DB_USER=statuspulse" >> .env
+          echo "DB_PASSWORD=password" >> .env
+          echo "REDIS_HOST=redis" >> .env
+          echo "REDIS_PORT=6379" >> .env
+
+      - name: Build Containers
+        run: docker compose build
+
+      - name: Start Containers
+        run: docker compose up -d
+
+      - name: Wait for Services
+        run: sleep 30
+
+      - name: Check Running Containers
+        run: docker compose ps
+
+      - name: Test Health Endpoint
+        run: curl http://localhost:8000/health
+
+      - name: Stop Containers
+        run: docker compose down
