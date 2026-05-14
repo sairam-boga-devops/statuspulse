@@ -1,6 +1,6 @@
 #!/bin/bash
 
-APP_URL="https://statuspulse-aws.duckdns.org/health"
+APP_URL="https://statuspulse-sairam-boga-devops.duckdns.org/health"
 LOG_FILE="$HOME/health-monitor.log"
 
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
