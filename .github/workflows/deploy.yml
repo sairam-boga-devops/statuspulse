@@ -1,0 +1,63 @@
+name: Deploy Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Build Docker Image
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}/statuspulse:${{ github.sha }} .
+          docker tag ghcr.io/${{ github.repository }}/statuspulse:${{ github.sha }} ghcr.io/${{ github.repository }}/statuspulse:latest
+
+      - name: Push Docker Image
+        run: |
+          docker push ghcr.io/${{ github.repository }}/statuspulse:${{ github.sha }}
+          docker push ghcr.io/${{ github.repository }}/statuspulse:latest
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+
+          script: |
+            cd ~/statuspulse
+            git pull origin main
+            docker compose down
+            docker compose up -d --build
+
+      - name: Health Check
+        run: |
+          sleep 20
+          curl -f https://statuspulse-sairam-boga-devops.duckdns.org/health
+
+      - name: Rollback on Failure
+        if: failure()
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+
+          script: |
+            cd ~/statuspulse
+            git reset --hard HEAD~1
+            docker compose down
+            docker compose up -d --build
