@@ -7,7 +7,7 @@ mkdir -p $BACKUP_DIR
 
 echo "Starting PostgreSQL backup..."
 
-docker exec statuspulse-postgres-1 pg_dump -U statuspulse statuspulse > $BACKUP_DIR/statuspulse_$TIMESTAMP.sql
+docker exec statuspulse-postgres pg_dump -U statuspulse statuspulse > $BACKUP_DIR/statuspulse_$TIMESTAMP.sql
 
 echo "Backup completed successfully."
 
