@@ -36,7 +36,6 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-
           script: |
             cd ~/statuspulse
             git pull origin main
@@ -55,12 +54,12 @@ jobs:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
-
           script: |
             cd ~/statuspulse
             git reset --hard HEAD~1
             docker compose down
             docker compose up -d --build
+
       - name: Send Success Email
         if: success()
         uses: dawidd6/action-send-mail@v3
@@ -68,7 +67,6 @@ jobs:
           server_address: smtp.gmail.com
           server_port: 465
           secure: true
-
           username: ${{ secrets.GMAIL_USERNAME }}
           password: ${{ secrets.GMAIL_APP_PASSWORD }}
 
@@ -86,7 +84,29 @@ jobs:
 
             Monitoring URL:
             https://uptime-kuma-sairam-boga-devops.duckdns.org
-                  - name: Discord Success Notification
+
+      - name: Send Failure Email
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.GMAIL_USERNAME }}
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+
+          subject: "❌ StatusPulse Deployment Failed"
+
+          to: ${{ secrets.GMAIL_USERNAME }}
+
+          from: GitHub Actions
+
+          body: |
+            StatusPulse deployment failed.
+
+            Check GitHub Actions logs for details.
+
+      - name: Discord Success Notification
         if: success()
         run: |
           curl -H "Content-Type: application/json" \
