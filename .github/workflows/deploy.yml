@@ -86,3 +86,18 @@ jobs:
 
             Monitoring URL:
             https://uptime-kuma-sairam-boga-devops.duckdns.org
+                  - name: Discord Success Notification
+        if: success()
+        run: |
+          curl -H "Content-Type: application/json" \
+          -X POST \
+          -d '{"content":"✅ StatusPulse deployment succeeded!\n\nApplication: https://statuspulse-sairam-boga-devops.duckdns.org\nMonitoring: https://uptime-kuma-sairam-boga-devops.duckdns.org"}' \
+          ${{ secrets.DISCORD_WEBHOOK }}
+
+      - name: Discord Failure Notification
+        if: failure()
+        run: |
+          curl -H "Content-Type: application/json" \
+          -X POST \
+          -d '{"content":"❌ StatusPulse deployment failed!\nCheck GitHub Actions logs."}' \
+          ${{ secrets.DISCORD_WEBHOOK }}
