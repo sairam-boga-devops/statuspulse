@@ -2,7 +2,7 @@
 
 set -e
 
-LOG_FILE="/var/log/statuspulse-deploy.log"
+LOG_FILE="$HOME/statuspulse-deploy.log"
 APP_DIR="$HOME/statuspulse"
 
 log() {
